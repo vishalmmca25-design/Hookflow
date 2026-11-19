@@ -1,0 +1,11 @@
+// use prisma-8
+model Zap {
+  id        String  @id @default(uuid())
+  triggerId String  @unique
+  trigger   Trigger @relation(fields: [triggerId], references: [id])
+}
+
+model Trigger {
+  id  String @id @default(uuid())
+  zap Zap?
+}

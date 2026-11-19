@@ -1,0 +1,217 @@
+[
+  {
+    "id": "schema.public",
+    "label": "Create schema \"public\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres"
+    },
+    "precheck": [],
+    "execute": [
+      {
+        "description": "Create schema \"public\"",
+        "sql": "CREATE SCHEMA IF NOT EXISTS \"public\"",
+        "params": []
+      }
+    ],
+    "postcheck": []
+  },
+  {
+    "id": "table.Trigger",
+    "label": "Create table \"Trigger\"",
+    "summary": "Creates table \"Trigger\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "Trigger"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"Trigger\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Trigger\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "table \"Trigger\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"Trigger\"",
+        "sql": "CREATE TABLE \"public\".\"Trigger\" (\n  \"id\" text NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"Trigger\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" WHERE (\"c\".\"oid\" = to_regclass($1) AND (\"c\".\"relkind\" = $2 OR \"c\".\"relkind\" = $3))) AS \"result\"",
+        "params": [
+          "\"public\".\"Trigger\"",
+          "r",
+          "p"
+        ],
+        "expectation": {
+          "expects": "present",
+          "object": "table \"Trigger\""
+        }
+      }
+    ]
+  },
+  {
+    "id": "table.Zap",
+    "label": "Create table \"Zap\"",
+    "summary": "Creates table \"Zap\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "Zap"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"Zap\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"Zap\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "table \"Zap\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"Zap\"",
+        "sql": "CREATE TABLE \"public\".\"Zap\" (\n  \"id\" text NOT NULL,\n  \"triggerId\" text NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"Zap\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" WHERE (\"c\".\"oid\" = to_regclass($1) AND (\"c\".\"relkind\" = $2 OR \"c\".\"relkind\" = $3))) AS \"result\"",
+        "params": [
+          "\"public\".\"Zap\"",
+          "r",
+          "p"
+        ],
+        "expectation": {
+          "expects": "present",
+          "object": "table \"Zap\""
+        }
+      }
+    ]
+  },
+  {
+    "id": "unique.Zap.Zap_triggerId_key",
+    "label": "Add unique constraint on \"Zap\" (triggerId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "Zap_triggerId_key",
+        "table": "Zap"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"Zap_triggerId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Zap_triggerId_key",
+          "public",
+          "\"public\".\"Zap\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "constraint \"Zap_triggerId_key\" on \"Zap\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"Zap_triggerId_key\"",
+        "sql": "ALTER TABLE \"public\".\"Zap\" ADD CONSTRAINT \"Zap_triggerId_key\" UNIQUE (\"triggerId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify unique constraint \"Zap_triggerId_key\" exists on (triggerId)",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3) AND \"c\".\"contype\" = $4 AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"conkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"conrelid\" AND key_attribute.attnum = key_column.attnum) = ($5)::jsonb)) AS \"result\"",
+        "params": [
+          "Zap_triggerId_key",
+          "public",
+          "\"public\".\"Zap\"",
+          "u",
+          "[\"triggerId\"]"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.Zap.Zap_triggerId_fkey",
+    "label": "Add foreign key \"Zap_triggerId_fkey\" on \"Zap\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "Zap_triggerId_fkey",
+        "table": "Zap"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"Zap_triggerId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "Zap_triggerId_fkey",
+          "public",
+          "\"public\".\"Zap\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "FK \"Zap_triggerId_fkey\" on \"Zap\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"Zap_triggerId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"Zap\"\nADD CONSTRAINT \"Zap_triggerId_fkey\"\nFOREIGN KEY (\"triggerId\")\nREFERENCES \"public\".\"Trigger\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"Zap_triggerId_fkey\" exists with the planned columns, referenced table and actions",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3) AND \"c\".\"contype\" = $4 AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"conkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"conrelid\" AND key_attribute.attnum = key_column.attnum) = ($5)::jsonb AND \"c\".\"confrelid\" = to_regclass($6) AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"confkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"confrelid\" AND key_attribute.attnum = key_column.attnum) = ($7)::jsonb AND \"c\".\"confdeltype\" = $8 AND \"c\".\"confupdtype\" = $9)) AS \"result\"",
+        "params": [
+          "Zap_triggerId_fkey",
+          "public",
+          "\"public\".\"Zap\"",
+          "f",
+          "[\"triggerId\"]",
+          "\"public\".\"Trigger\"",
+          "[\"id\"]",
+          "a",
+          "a"
+        ]
+      }
+    ]
+  }
+]
