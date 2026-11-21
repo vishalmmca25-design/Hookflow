@@ -1,11 +1,37 @@
-// use prisma-8
+
 model Zap {
-  id        String  @id @onCreate(uuid())
-  triggerId String  @unique
-  trigger   Trigger @relation(fields: [triggerId], references: [id])
+  id        String   @id @default(uuid())
+  triggerId String   @unique
+  trigger   Trigger?
+  actions   Action[]
 }
 
 model Trigger {
-  id  String @id @onCreate(uuid())
-  zap Zap?
+  id        String @id @default(uuid())
+  zapId     String @unique
+  triggerId String
+
+  zap  Zap              @relation(fields: [zapId], references: [id])
+  type AvailableTrigger @relation(fields: [triggerId], references: [id])
+}
+
+model Action {
+  id       String @id @default(uuid())
+  zapId    String
+  actionId String
+
+  zap  Zap             @relation(fields: [zapId], references: [id])
+  type AvailableAction @relation(fields: [actionId], references: [id])
+}
+
+model AvailableAction {
+  id      String   @id @default(uuid())
+  name    String
+  actions Action[]
+}
+
+model AvailableTrigger {
+  id       String    @id @default(uuid())
+  name     String
+  triggers Trigger[]
 }

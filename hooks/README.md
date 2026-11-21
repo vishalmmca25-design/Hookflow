@@ -32,3 +32,18 @@ Prisma ORM setup is scaffolded in:
 For provider-specific Prisma ORM reference docs, see `prisma-8.md`. Prisma ORM skills live in the upstream `skills/` directory: https://github.com/prisma/prisma/tree/main/skills.
 
 Node-based Prisma ORM projects expect Node.js 24 LTS or newer.
+
+ npx prisma contract emit                                                                           
+>> npx prisma migration plan --name init                                                                                                                                     
+>> npx prisma db migrate --advance-ref db                                                                             
+                                           
+S C:\Users\visha\Hookflow\hooks> docker inspect postgres-db --format '{{range .Config.Env}}{{println .}}{{end}}'
+POSTGRES_USER=postgres                                               
+POSTGRES_PASSWORD=admin123                                                                                                
+POSTGRES_DB=hookflow                                   
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/lib/postgresql/18/bin
+GOSU_VERSION=1.20
+LANG=en_US.utf8
+PG_MAJOR=18
+PG_VERSION=18.7-1.pgdg13+2
+PGDATA=/var/lib/postgresql/18/docker
