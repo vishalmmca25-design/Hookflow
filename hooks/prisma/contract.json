@@ -23,6 +23,14 @@
     "Zap": {
       "model": "Zap",
       "namespace": "public"
+    },
+    "ZapRun": {
+      "model": "ZapRun",
+      "namespace": "public"
+    },
+    "ZapRunOutbox": {
+      "model": "ZapRunOutbox",
+      "namespace": "public"
     }
   },
   "domain": {
@@ -319,6 +327,21 @@
                   "model": "Trigger",
                   "namespace": "public"
                 }
+              },
+              "zapRuns": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "zapId"
+                  ]
+                },
+                "to": {
+                  "model": "ZapRun",
+                  "namespace": "public"
+                }
               }
             },
             "storage": {
@@ -332,6 +355,118 @@
               },
               "namespaceId": "public",
               "table": "Zap"
+            }
+          },
+          "ZapRun": {
+            "fields": {
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "zapId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "Zap": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "zapId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Zap",
+                  "namespace": "public"
+                }
+              },
+              "zapRunOutbox": {
+                "cardinality": "1:1",
+                "nullable": true,
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "zapRunId"
+                  ]
+                },
+                "to": {
+                  "model": "ZapRunOutbox",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "id": {
+                  "column": "id"
+                },
+                "zapId": {
+                  "column": "zapId"
+                }
+              },
+              "namespaceId": "public",
+              "table": "ZapRun"
+            }
+          },
+          "ZapRunOutbox": {
+            "fields": {
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "zapRunId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "ZapRun": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "zapRunId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "ZapRun",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "id": {
+                  "column": "id"
+                },
+                "zapRunId": {
+                  "column": "zapRunId"
+                }
+              },
+              "namespaceId": "public",
+              "table": "ZapRunOutbox"
             }
           }
         }
@@ -555,6 +690,99 @@
                 ]
               },
               "uniques": []
+            },
+            "ZapRun": {
+              "columns": {
+                "id": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "zapId": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "onDelete": "restrict",
+                  "onUpdate": "cascade",
+                  "source": {
+                    "columns": [
+                      "zapId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "ZapRun"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "Zap"
+                  }
+                }
+              ],
+              "indexes": [],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
+            },
+            "ZapRunOutbox": {
+              "columns": {
+                "id": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "zapRunId": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "index": {
+                    "name": "ZapRunOutbox_zapRunId_key"
+                  },
+                  "onDelete": "restrict",
+                  "onUpdate": "cascade",
+                  "source": {
+                    "columns": [
+                      "zapRunId"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "ZapRunOutbox"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "ZapRun"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "zapRunId"
+                  ],
+                  "name": "ZapRunOutbox_zapRunId_key",
+                  "unique": true
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
             }
           }
         },
@@ -562,10 +790,10 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "8e8efe28dcac8528e491cbd3ef328e4385f683d2e2d4c64b05db91bb9b3fc550"
+    "storageHash": "ed0200984107b80cc47bafd4d82fbc105ce5045dffe26468fc3689fed12ad145"
   },
   "execution": {
-    "executionHash": "abb044f52a9060b6931c66802d3f7d2ddead23739f1a633af7a0c1c6fa87c500",
+    "executionHash": "f723dc23cbec4df572f67c05887b5699bc84a446be32f9a288ec4dd6ec626a1e",
     "mutations": {
       "defaults": [
         {
@@ -619,6 +847,28 @@
           },
           "ref": {
             "entry": "Zap",
+            "field": "id",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv4",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "ZapRun",
+            "field": "id",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv4",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "ZapRunOutbox",
             "field": "id",
             "namespace": "public"
           }

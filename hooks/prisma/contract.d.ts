@@ -23,9 +23,9 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'8e8efe28dcac8528e491cbd3ef328e4385f683d2e2d4c64b05db91bb9b3fc550'>;
+  StorageHashBase<'ed0200984107b80cc47bafd4d82fbc105ce5045dffe26468fc3689fed12ad145'>;
 export type ExecutionHash =
-  ExecutionHashBase<'abb044f52a9060b6931c66802d3f7d2ddead23739f1a633af7a0c1c6fa87c500'>;
+  ExecutionHashBase<'f723dc23cbec4df572f67c05887b5699bc84a446be32f9a288ec4dd6ec626a1e'>;
 export type ProfileHash =
   ProfileHashBase<'3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2'>;
 
@@ -342,7 +342,21 @@ export namespace Models {
     triggerId: FieldOutputTypes['public']['Zap']['triggerId'];
     actions: public_Action[];
     trigger: public_Trigger | null;
-    readonly [RelationKeys]?: 'actions' | 'trigger';
+    zapRuns: public_ZapRun[];
+    readonly [RelationKeys]?: 'actions' | 'trigger' | 'zapRuns';
+  };
+  export type public_ZapRun = {
+    id: FieldOutputTypes['public']['ZapRun']['id'];
+    zapId: FieldOutputTypes['public']['ZapRun']['zapId'];
+    Zap: public_Zap;
+    zapRunOutbox: public_ZapRunOutbox | null;
+    readonly [RelationKeys]?: 'Zap' | 'zapRunOutbox';
+  };
+  export type public_ZapRunOutbox = {
+    id: FieldOutputTypes['public']['ZapRunOutbox']['id'];
+    zapRunId: FieldOutputTypes['public']['ZapRunOutbox']['zapRunId'];
+    ZapRun: public_ZapRun;
+    readonly [RelationKeys]?: 'ZapRun';
   };
 }
 
@@ -353,6 +367,8 @@ export declare const models: {
     AvailableTrigger: Models.public_AvailableTrigger;
     Trigger: Models.public_Trigger;
     Zap: Models.public_Zap;
+    ZapRun: Models.public_ZapRun;
+    ZapRunOutbox: Models.public_ZapRunOutbox;
   };
 };
 
@@ -548,6 +564,78 @@ type ContractBase = Omit<
               ];
               foreignKeys: readonly [];
             };
+            readonly ZapRun: {
+              columns: {
+                readonly id: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly zapId: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'ZapRun';
+                    readonly columns: readonly ['zapId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'Zap';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
+            };
+            readonly ZapRunOutbox: {
+              columns: {
+                readonly id: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly zapRunId: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [
+                {
+                  readonly name: 'ZapRunOutbox_zapRunId_key';
+                  readonly columns: readonly ['zapRunId'];
+                  readonly unique: true;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'ZapRunOutbox';
+                    readonly columns: readonly ['zapRunId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'ZapRun';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
+            };
           };
         };
       };
@@ -570,6 +658,11 @@ type ContractBase = Omit<
     };
     readonly Trigger: { readonly namespace: 'public' & NamespaceId; readonly model: 'Trigger' };
     readonly Zap: { readonly namespace: 'public' & NamespaceId; readonly model: 'Zap' };
+    readonly ZapRun: { readonly namespace: 'public' & NamespaceId; readonly model: 'ZapRun' };
+    readonly ZapRunOutbox: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'ZapRunOutbox';
+    };
   };
   readonly domain: {
     readonly namespaces: {
@@ -772,6 +865,17 @@ type ContractBase = Omit<
                   readonly targetFields: readonly ['zapId'];
                 };
               };
+              readonly zapRuns: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'ZapRun';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['zapId'];
+                };
+              };
             };
             readonly storage: {
               readonly table: 'Zap';
@@ -779,6 +883,83 @@ type ContractBase = Omit<
               readonly fields: {
                 readonly id: { readonly column: 'id' };
                 readonly triggerId: { readonly column: 'triggerId' };
+              };
+            };
+          };
+          readonly ZapRun: {
+            readonly fields: {
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly zapId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+            };
+            readonly relations: {
+              readonly Zap: {
+                readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'Zap' };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['zapId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly zapRunOutbox: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'ZapRunOutbox';
+                };
+                readonly cardinality: '1:1';
+                readonly nullable: true;
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['zapRunId'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'ZapRun';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly id: { readonly column: 'id' };
+                readonly zapId: { readonly column: 'zapId' };
+              };
+            };
+          };
+          readonly ZapRunOutbox: {
+            readonly fields: {
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly zapRunId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+            };
+            readonly relations: {
+              readonly ZapRun: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'ZapRun';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['zapRunId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'ZapRunOutbox';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly id: { readonly column: 'id' };
+                readonly zapRunId: { readonly column: 'zapRunId' };
               };
             };
           };
@@ -855,6 +1036,22 @@ type ContractBase = Omit<
           readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
           readonly ref: {
             readonly entry: 'Zap';
+            readonly field: 'id';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'ZapRun';
+            readonly field: 'id';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'uuidv4'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'ZapRunOutbox';
             readonly field: 'id';
             readonly namespace: 'public';
           };

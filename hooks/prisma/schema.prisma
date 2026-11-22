@@ -1,3 +1,4 @@
+
 generator client {
   provider = "prisma-client"
   output   = "../generated/prisma"
@@ -12,6 +13,7 @@ model Zap {
   triggerId String   @unique
   trigger   Trigger?
   actions   Action[]
+  zapRuns   ZapRun[]
 }
 
 model Trigger {
@@ -43,3 +45,17 @@ model AvailableTrigger {
   name     String
   triggers Trigger[]
 }
+
+model ZapRun {
+  id           String        @id @default(uuid())
+  zapId        String
+  Zap          Zap           @relation(fields: [zapId], references: [id])
+  zapRunOutbox ZapRunOutbox?
+}
+
+model ZapRunOutbox {
+  id       String @id @default(uuid())
+  zapRunId String @unique
+  ZapRun   ZapRun @relation(fields: [zapRunId], references: [id])
+}
+

@@ -1,0 +1,252 @@
+[
+  {
+    "id": "table.ZapRun",
+    "label": "Create table \"ZapRun\"",
+    "summary": "Creates table \"ZapRun\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "ZapRun"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"ZapRun\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"ZapRun\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "table \"ZapRun\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"ZapRun\"",
+        "sql": "CREATE TABLE \"public\".\"ZapRun\" (\n  \"id\" text NOT NULL,\n  \"zapId\" text NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"ZapRun\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" WHERE (\"c\".\"oid\" = to_regclass($1) AND (\"c\".\"relkind\" = $2 OR \"c\".\"relkind\" = $3))) AS \"result\"",
+        "params": [
+          "\"public\".\"ZapRun\"",
+          "r",
+          "p"
+        ],
+        "expectation": {
+          "expects": "present",
+          "object": "table \"ZapRun\""
+        }
+      }
+    ]
+  },
+  {
+    "id": "table.ZapRunOutbox",
+    "label": "Create table \"ZapRunOutbox\"",
+    "summary": "Creates table \"ZapRunOutbox\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "ZapRunOutbox"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"ZapRunOutbox\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"ZapRunOutbox\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "table \"ZapRunOutbox\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"ZapRunOutbox\"",
+        "sql": "CREATE TABLE \"public\".\"ZapRunOutbox\" (\n  \"id\" text NOT NULL,\n  \"zapRunId\" text NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"ZapRunOutbox\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" WHERE (\"c\".\"oid\" = to_regclass($1) AND (\"c\".\"relkind\" = $2 OR \"c\".\"relkind\" = $3))) AS \"result\"",
+        "params": [
+          "\"public\".\"ZapRunOutbox\"",
+          "r",
+          "p"
+        ],
+        "expectation": {
+          "expects": "present",
+          "object": "table \"ZapRunOutbox\""
+        }
+      }
+    ]
+  },
+  {
+    "id": "index.ZapRunOutbox.ZapRunOutbox_zapRunId_key",
+    "label": "Create index \"ZapRunOutbox_zapRunId_key\" on \"ZapRunOutbox\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "ZapRunOutbox_zapRunId_key",
+        "table": "ZapRunOutbox"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"ZapRunOutbox_zapRunId_key\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"ZapRunOutbox_zapRunId_key\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "index \"ZapRunOutbox_zapRunId_key\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"ZapRunOutbox_zapRunId_key\"",
+        "sql": "CREATE UNIQUE INDEX \"ZapRunOutbox_zapRunId_key\" ON \"public\".\"ZapRunOutbox\" (\"zapRunId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"ZapRunOutbox_zapRunId_key\" exists on \"ZapRunOutbox\" with the planned definition",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_index\" AS \"i\" ON \"i\".\"indexrelid\" = \"c\".\"oid\" INNER JOIN \"pg_am\" AS \"m\" ON \"m\".\"oid\" = \"c\".\"relam\" WHERE (\"c\".\"oid\" = to_regclass($1) AND (\"c\".\"relkind\" = $2 OR \"c\".\"relkind\" = $3) AND \"i\".\"indrelid\" = to_regclass($4) AND \"i\".\"indisunique\" AND \"m\".\"amname\" = $5 AND (\"i\".\"indexprs\" IS NULL AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"i\".\"indkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"i\".\"indrelid\" AND key_attribute.attnum = key_column.attnum) = ($6)::jsonb) AND \"i\".\"indpred\" IS NULL)) AS \"result\"",
+        "params": [
+          "\"public\".\"ZapRunOutbox_zapRunId_key\"",
+          "i",
+          "I",
+          "\"public\".\"ZapRunOutbox\"",
+          "btree",
+          "[\"zapRunId\"]"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.ZapRun.ZapRun_zapId_fkey",
+    "label": "Add foreign key \"ZapRun_zapId_fkey\" on \"ZapRun\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "ZapRun_zapId_fkey",
+        "table": "ZapRun"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"ZapRun_zapId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "ZapRun_zapId_fkey",
+          "public",
+          "\"public\".\"ZapRun\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "FK \"ZapRun_zapId_fkey\" on \"ZapRun\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"ZapRun_zapId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"ZapRun\"\nADD CONSTRAINT \"ZapRun_zapId_fkey\"\nFOREIGN KEY (\"zapId\")\nREFERENCES \"public\".\"Zap\" (\"id\")\nON DELETE RESTRICT\nON UPDATE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"ZapRun_zapId_fkey\" exists with the planned columns, referenced table and actions",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3) AND \"c\".\"contype\" = $4 AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"conkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"conrelid\" AND key_attribute.attnum = key_column.attnum) = ($5)::jsonb AND \"c\".\"confrelid\" = to_regclass($6) AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"confkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"confrelid\" AND key_attribute.attnum = key_column.attnum) = ($7)::jsonb AND \"c\".\"confdeltype\" = $8 AND \"c\".\"confupdtype\" = $9)) AS \"result\"",
+        "params": [
+          "ZapRun_zapId_fkey",
+          "public",
+          "\"public\".\"ZapRun\"",
+          "f",
+          "[\"zapId\"]",
+          "\"public\".\"Zap\"",
+          "[\"id\"]",
+          "r",
+          "c"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.ZapRunOutbox.ZapRunOutbox_zapRunId_fkey",
+    "label": "Add foreign key \"ZapRunOutbox_zapRunId_fkey\" on \"ZapRunOutbox\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "ZapRunOutbox_zapRunId_fkey",
+        "table": "ZapRunOutbox"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"ZapRunOutbox_zapRunId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "ZapRunOutbox_zapRunId_fkey",
+          "public",
+          "\"public\".\"ZapRunOutbox\""
+        ],
+        "expectation": {
+          "expects": "absent",
+          "object": "FK \"ZapRunOutbox_zapRunId_fkey\" on \"ZapRunOutbox\""
+        }
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"ZapRunOutbox_zapRunId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"ZapRunOutbox\"\nADD CONSTRAINT \"ZapRunOutbox_zapRunId_fkey\"\nFOREIGN KEY (\"zapRunId\")\nREFERENCES \"public\".\"ZapRun\" (\"id\")\nON DELETE RESTRICT\nON UPDATE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"ZapRunOutbox_zapRunId_fkey\" exists with the planned columns, referenced table and actions",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3) AND \"c\".\"contype\" = $4 AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"conkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"conrelid\" AND key_attribute.attnum = key_column.attnum) = ($5)::jsonb AND \"c\".\"confrelid\" = to_regclass($6) AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"confkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"confrelid\" AND key_attribute.attnum = key_column.attnum) = ($7)::jsonb AND \"c\".\"confdeltype\" = $8 AND \"c\".\"confupdtype\" = $9)) AS \"result\"",
+        "params": [
+          "ZapRunOutbox_zapRunId_fkey",
+          "public",
+          "\"public\".\"ZapRunOutbox\"",
+          "f",
+          "[\"zapRunId\"]",
+          "\"public\".\"ZapRun\"",
+          "[\"id\"]",
+          "r",
+          "c"
+        ]
+      }
+    ]
+  }
+]
