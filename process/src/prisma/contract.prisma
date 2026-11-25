@@ -1,4 +1,16 @@
+// use prisma-8
 
+
+
+model Post {
+  id        Int                @id @default(autoincrement())
+  title     String
+  content   String?
+  author    User               @relation(fields: [authorId], references: [id])
+  authorId  Int
+  createdAt DateTime           @default(now()) @onCreate(now())
+  updatedAt temporal.UpdatedAt
+}
 model User {
   id       Int    @id @default(autoincrement())
   name     String
@@ -8,7 +20,7 @@ model User {
 }
 
 model Zap {
-  id        String   @id @default(uuid())
+  id        String   @id @onCreate(uuid())
   triggerId String
   userId    Int
   trigger   Trigger?
@@ -18,7 +30,7 @@ model Zap {
 }
 
 model Trigger {
-  id        String           @id @default(uuid())
+  id        String           @id @onCreate(uuid())
   zapId     String           @unique
   triggerId String
   metadata  Json         
@@ -27,7 +39,7 @@ model Trigger {
 }
 
 model Action {
-  id           String          @id @default(uuid())
+  id           String          @id @onCreate(uuid())
   zapId        String
   zap          Zap             @relation(fields: [zapId], references: [id])
   actionId     String
@@ -37,21 +49,21 @@ model Action {
 }
 
 model AvailableAction {
-  id      String   @id @default(uuid())
+  id      String   @id @onCreate(uuid())
   name    String
   image   String
   actions Action[]
 }
 
 model AvailableTrigger {
-  id       String    @id @default(uuid())
+  id       String    @id @onCreate(uuid())
   name     String
   image    String
   triggers Trigger[]
 }
 
 model ZapRun {
-  id           String        @id @default(uuid())
+  id           String        @id @onCreate(uuid())
   zapId        String
   metadata     Json
   zap          Zap           @relation(fields: [zapId], references: [id])
@@ -59,7 +71,7 @@ model ZapRun {
 }
 
 model ZapRunOutbox {
-  id       String @id @default(uuid())
+  id       String @id @onCreate(uuid())
   zapRunId String @unique
   zapRun   ZapRun @relation(fields: [zapRunId], references: [id])
 }
